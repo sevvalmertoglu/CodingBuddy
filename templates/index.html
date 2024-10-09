@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Coding Buddy</title>
+ <!--  <link rel="shortcut icon" href="img/icon.png"/> -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<nav>
+  <a>
+    <img src="{{ url_for('static', filename='img/ai.png') }}" width="55" height="55">
+  </a>
+  <a href="/codingPage">Coding Buddy</a>
+</nav>
+<main>
+  <section>
+    <div class="fixed">
+      <img src="https://fastly.picsum.photos/id/6/1920/1080.jpg?grayscale&hmac=kcBy-PDyUCD589JvLFHqYhKqCigioDgzoiuckGHjvdM" alt="">
+      <div class="content">
+        <h1>Coding Buddy'e hoş geldin!</h1>
+        <p>Kodlama yolculuğunda sana rehberlik edecek en iyi arkadaşın burada. Hadi birlikte harika şeyler inşa edelim!</p>
+      </div>
+    </div>
+  </section>
+  <section>
+    <article>
+      <div class="fixed">
+        <img src="https://fastly.picsum.photos/id/846/1920/1080.jpg?hmac=rx55XDjKPLjmW5WdHBRqOphU4wZkLT5W3TC_WBdvyVY" alt="">
+      </div>
+      <div class="static">
+        <div class="content">
+          <div class="text-wrap">
+            <div class="loud-wrap">
+              <h2>Projelerde yardıma mı ihtiyacın var?</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+    <article>
+      <div class="fixed"></div>
+      <div class="static">
+        <div class="content">
+          <h2>Coding Buddy'e tıklayarak,<br />Soru sormaya başlayabilirsin.</h2>
+        </div>
+      </div>
+    </article>
+    <article>
+      <div class="fixed">
+        <img src="https://fastly.picsum.photos/id/283/3823/2538.jpg?hmac=a_UsYMvJaoPttj7INb2UOcCbMuKb9cEu70ZgzcwCDqs" alt="">
+      </div>
+      <div class="static">
+        <div class="content">
+          <h2>Sana yardımcı olmak için burada!</h2>
+          <div class="chat-container">
+            <div class="text-blocks">
+              <p>Nasıl başlayabilirim?</p>
+              <p>Coding Buddy ile kodlama yolculuğuna adım atabilirsin. Sadece birkaç tıkla, ilk adımını at!</p>
+              <p>İpuçları alabilir miyim?</p>
+              <p>Tabii ki! Projelerinle ilgili önerilerde bulunabilirim.</p>
+              <p>Teşekkürler, Coding Buddy!</p>
+            </div>            
+          </div>
+          <div class="filler">
+            <h2>Projeni yükleyip dökümante yapmayı unutma!</h2>
+          </div>
+        </div>
+      </div>
+    </article>
+    <article>
+      <div class="fixed">
+        <img src="https://fastly.picsum.photos/id/681/1920/1080.jpg?hmac=qyb0NfTEkQw9QdsIYQbV0GhAEyKiPcAfetmIF_e8Kik" alt="" />
+        <div class="content">
+          <h2>Hepsi bu kadar.<br>Şimdi yapay zeka zamanı!</h2>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+<!-- partial -->
+  <script type="module" src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+</html>
