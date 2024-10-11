@@ -30,6 +30,7 @@
   <body>
     <nav class="navbar">
       <ul class="nav-items">
+          <img src="{{ url_for('static', filename='img/ai.png') }}" width="50" height="50">
           <li><a href="/">Ana Sayfa</a></li>
           <li><a href="/projectPage" class="active">Project Coding Buddy</a></li>
           <li><a href="/codingPage">Coding Buddy</a></li>
@@ -59,6 +60,15 @@
             <div id="messageFormeight" class="card-body msg_card_body"></div>
             <div class="card-footer">
               <form id="messageArea" class="input-group">
+                <div class="input-group-append">
+                  <button
+                    type="button"
+                    id="project"
+                    class="input-group-text project_btn"
+                  >
+                    <i class="fas fa-project-diagram"></i>
+                  </button>
+                </div>
                 <input
                   type="text"
                   id="text"

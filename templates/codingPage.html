@@ -30,6 +30,7 @@
   <body>
     <nav class="navbar">
       <ul class="nav-items">
+          <img src="{{ url_for('static', filename='img/ai.png') }}" width="50" height="50">
           <li><a href="/">Ana Sayfa</a></li>
           <li><a href="/projectPage" >Project Coding Buddy</a></li>
           <li><a href="/codingPage" class="active">Coding Buddy</a></li>
@@ -59,6 +60,23 @@
             <div id="messageFormeight" class="card-body msg_card_body"></div>
             <div class="card-footer">
               <form id="messageArea" class="input-group">
+                <div class="input-group-append">
+                  <button
+                    type="button"
+                    id="photo"
+                    class="input-group-text photo_btn"
+                  >
+                  <i class="fas fa-image"></i>
+                  </button>
+
+                   <input
+                       type="file"
+                       id="imageInput"
+                       name="image"
+                       accept="image/*"
+                       style="display: none;"
+                    />
+                </div>
                 <input
                   type="text"
                   id="text"
@@ -83,55 +101,73 @@
         </div>
       </div>
     </div>
-
+    
     <script>
       function scrollToBottom() {
-        var messageBody = document.getElementById("messageFormeight");
-        messageBody.scrollTop = messageBody.scrollHeight;
+          var messageBody = document.getElementById("messageFormeight");
+          messageBody.scrollTop = messageBody.scrollHeight;
       }
-
+  
       $(document).ready(function () {
-        $("#messageArea").on("submit", function (event) {
-          const date = new Date();
-          const hour = date.getHours();
-          const minute = date.getMinutes();
-          const str_time = hour + ":" + minute;
-          var rawText = $("#text").val();
-
-          var userHtml =
-            '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' +
-            rawText +
-            '<span class="msg_time_send">' +
-            str_time +
-            '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
-
-          $("#text").val("");
-          $("#messageFormeight").append(userHtml);
-
-          scrollToBottom();
-
-          $.ajax({
-            type: "POST",
-            url: "/get",
-            contentType: "application/json",
-            dataType: "json",
-            data: JSON.stringify({
-              msg: rawText
-            }),
-            success: function (response) {
-              var botHtml =
-                '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/yqQTbNc/bot.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
-                response.message +
-                '<span class="msg_time">' +
-                str_time +
-                "</span></div></div>";
-              $("#messageFormeight").append($.parseHTML(botHtml));
-              scrollToBottom();
-            }
+          document.getElementById('photo').addEventListener('click', function () {
+              document.getElementById('imageInput').click();
           });
-          event.preventDefault();
-        });
+  
+          $("#messageArea").on("submit", function (event) {
+              event.preventDefault(); 
+  
+              const date = new Date();
+              const hour = date.getHours();
+              const minute = date.getMinutes();
+              const str_time = hour + ":" + minute;
+              var rawText = $("#text").val(); 
+              var imageFile = document.getElementById('imageInput').files[0];
+              
+              var formData = new FormData();
+              formData.append('msg', rawText);
+              if (imageFile) {
+                  formData.append('image', imageFile); 
+              }
+  
+              var userHtml =
+                  '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' +
+                  rawText +
+                  '<span class="msg_time_send">' +
+                  str_time +
+                  '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
+              
+              $("#text").val("");
+              document.getElementById('imageInput').value = ""; // Resim alanını her soruda sıfırlar
+              $("#messageFormeight").append(userHtml);
+              scrollToBottom();
+  
+              // AJAX isteği gönder
+              $.ajax({
+                  type: "POST",
+                  url: "/upload", 
+                  processData: false,
+                  contentType: false,
+                  data: formData,
+                  success: function (response) {
+                      var botResponse = response.message;
+  
+                      var botHtml =
+                          '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/yqQTbNc/bot.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
+                          botResponse +
+                          '<span class="msg_time">' +
+                          str_time +
+                          "</span></div></div>";
+  
+                      $("#messageFormeight").append($.parseHTML(botHtml)); // Bot cevabını ekrana yazdır
+                      scrollToBottom();
+                  },
+                  error: function (xhr, status, error) {
+                      console.error("Hata: ", error);
+                  }
+              });
+          });
       });
-    </script>
+  </script>
+  
   </body>
 </html>
