@@ -1,11 +1,3 @@
-<link
-  href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
-  rel="stylesheet"
-  id="bootstrap-css"
-/>
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -31,7 +23,7 @@
     <nav class="navbar">
       <ul class="nav-items">
           <img src="{{ url_for('static', filename='img/ai.png') }}" width="50" height="50">
-          <li><a href="/">Ana Sayfa</a></li>
+          <li><a href="/">Home</a></li>
           <li><a href="/projectPage" >Project Coding Buddy</a></li>
           <li><a href="/codingPage" class="active">Coding Buddy</a></li>
       </ul>
@@ -53,7 +45,7 @@
                 </div>
                 <div class="user_info">
                   <span>Coding Buddy</span>
-                  <p>Bana her şeyi sor!</p>
+                  <p>Ask me anything!</p>
                 </div>
               </div>
             </div>
@@ -66,7 +58,7 @@
                     id="photo"
                     class="input-group-text photo_btn"
                   >
-                  <i class="fas fa-image"></i>
+                  <i class="fas fa-image" id="imageIcon"></i>
                   </button>
 
                    <input
@@ -81,7 +73,7 @@
                   type="text"
                   id="text"
                   name="msg"
-                  placeholder="Mesajınızı yazın..."
+                  placeholder="Write your message..."
                   autocomplete="off"
                   class="form-control type_msg"
                   required
@@ -112,6 +104,13 @@
           document.getElementById('photo').addEventListener('click', function () {
               document.getElementById('imageInput').click();
           });
+
+            // Resim yüklendiğinde tik işareti göster
+          document.getElementById('imageInput').addEventListener('change', function () {
+              if (this.files.length > 0) {
+                  $('#photo i').removeClass('fas fa-image').addClass('fas fa-check');
+              }
+          });
   
           $("#messageArea").on("submit", function (event) {
               event.preventDefault(); 
@@ -140,6 +139,22 @@
               document.getElementById('imageInput').value = ""; // Resim alanını her soruda sıfırlar
               $("#messageFormeight").append(userHtml);
               scrollToBottom();
+
+              // Simgeyi tekrar eski haline döndür (fa-image)
+              $('#photo i').removeClass('fas fa-check').addClass('fas fa-image');
+
+                // 1 saniye sonra '...' mesajını gösterir
+              setTimeout(function() {
+              var thinkingHtml =
+                '<div class="d-flex justify-content-start mb-4 thinking-msg"><div class="img_cont_msg"><img src="https://i.ibb.co/yqQTbNc/bot.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
+                '...' +
+                '<span class="msg_time">' +
+                str_time +
+                '</span></div></div>';
+            
+               $("#messageFormeight").append(thinkingHtml);
+               scrollToBottom();
+               }, 1000);
   
               // AJAX isteği gönder
               $.ajax({
@@ -150,6 +165,9 @@
                   data: formData,
                   success: function (response) {
                       var botResponse = response.message;
+
+                      // '...' mesajını kaldırır ve gerçek cevabı ekler
+                      $(".thinking-msg").remove();
   
                       var botHtml =
                           '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/yqQTbNc/bot.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
@@ -158,7 +176,7 @@
                           str_time +
                           "</span></div></div>";
   
-                      $("#messageFormeight").append($.parseHTML(botHtml)); // Bot cevabını ekrana yazdır
+                      $("#messageFormeight").append($.parseHTML(botHtml)); // Bot cevabını ekrana yazdırır
                       scrollToBottom();
                   },
                   error: function (xhr, status, error) {
