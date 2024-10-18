@@ -1,11 +1,3 @@
-<link
-  href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
-  rel="stylesheet"
-  id="bootstrap-css"
-/>
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -31,7 +23,7 @@
     <nav class="navbar">
       <ul class="nav-items">
           <img src="{{ url_for('static', filename='img/ai.png') }}" width="50" height="50">
-          <li><a href="/">Ana Sayfa</a></li>
+          <li><a href="/">Home</a></li>
           <li><a href="/projectPage" class="active">Project Coding Buddy</a></li>
           <li><a href="/codingPage">Coding Buddy</a></li>
       </ul>
@@ -53,7 +45,7 @@
                 </div>
                 <div class="user_info">
                   <span>Coding Buddy</span>
-                  <p>Bana her şeyi sor!</p>
+                  <p>Ask me anything!</p>
                 </div>
               </div>
             </div>
@@ -66,14 +58,20 @@
                     id="project"
                     class="input-group-text project_btn"
                   >
-                    <i class="fas fa-project-diagram"></i>
+                  <i class="fas fa-project-diagram" id="imageIcon"></i>
                   </button>
+                  <input type="file" 
+                         id="projectInput"
+                         name="project" 
+                         accept=".zip,.pdf,.docx,.pptx,.txt,.swift,.js,.css,.html"
+                         style="display:none;"
+                      >
                 </div>
                 <input
                   type="text"
                   id="text"
                   name="msg"
-                  placeholder="Mesajınızı yazın..."
+                  placeholder="Write your message..."
                   autocomplete="off"
                   class="form-control type_msg"
                   required
@@ -101,47 +99,92 @@
       }
 
       $(document).ready(function () {
-        $("#messageArea").on("submit", function (event) {
-          const date = new Date();
-          const hour = date.getHours();
-          const minute = date.getMinutes();
-          const str_time = hour + ":" + minute;
-          var rawText = $("#text").val();
+          document.getElementById('project').addEventListener('click', function () {
+              document.getElementById('projectInput').click();
+          });
 
-          var userHtml =
-            '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' +
-            rawText +
-            '<span class="msg_time_send">' +
-            str_time +
-            '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
+          document.getElementById('projectInput').addEventListener('change', function () {
+              if (this.files.length > 0) {
+                  $('#project i').removeClass('fas fa-project-diagram').addClass('fas fa-check');
+              } else {
+                  $('#project i').removeClass('fas fa-check').addClass('fas fa-project-diagram');
+              }
+          });
 
-          $("#text").val("");
-          $("#messageFormeight").append(userHtml);
+          $("#messageArea").on("submit", function (event) {
+              event.preventDefault(); 
+  
+              const date = new Date();
+              const hour = date.getHours();
+              const minute = date.getMinutes();
+              const str_time = hour + ":" + minute;
 
-          scrollToBottom();
+              var rawText = $("#text").val(); 
+              var projectFile = document.getElementById('projectInput').files[0];
+              
+              var formData = new FormData();
+              formData.append('msg', rawText);
+              if (projectFile) {
+                  formData.append('project', projectFile); 
+              }
+  
+              var userHtml =
+                  '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' +
+                  rawText +
+                  '<span class="msg_time_send">' +
+                  str_time +
+                  '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
+              
+              $("#text").val("");
+              document.getElementById('projectInput').value = "";
+              $("#messageFormeight").append(userHtml);
+              scrollToBottom();
 
-          $.ajax({
-            type: "POST",
-            url: "/get",
-            contentType: "application/json",
-            dataType: "json",
-            data: JSON.stringify({
-              msg: rawText
-            }),
-            success: function (response) {
-              var botHtml =
-                '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/yqQTbNc/bot.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
-                response.message +
+              // Simgeyi tekrar eski haline döndürür
+              $('#photo i').removeClass('fas fa-check').addClass('fas fa-project-diagram');
+
+                // 1 saniye sonra '...' mesajını gösterir
+              setTimeout(function() {
+              var thinkingHtml =
+                '<div class="d-flex justify-content-start mb-4 thinking-msg"><div class="img_cont_msg"><img src="https://i.ibb.co/yqQTbNc/bot.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
+                '...' +
                 '<span class="msg_time">' +
                 str_time +
-                "</span></div></div>";
-              $("#messageFormeight").append($.parseHTML(botHtml));
-              scrollToBottom();
-            }
+                '</span></div></div>';
+            
+               $("#messageFormeight").append(thinkingHtml);
+               scrollToBottom();
+               }, 1000);
+  
+              // AJAX isteği gönder
+              $.ajax({
+                  type: "POST",
+                  url: "/upload", 
+                  processData: false,
+                  contentType: false,
+                  data: formData,
+                  success: function (response) {
+                      var botResponse = response.message;
+
+                      // '...' mesajını kaldırır ve gerçek cevabı ekler
+                      $(".thinking-msg").remove();
+  
+                      var botHtml =
+                          '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://i.ibb.co/yqQTbNc/bot.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
+                          botResponse +
+                          '<span class="msg_time">' +
+                          str_time +
+                          "</span></div></div>";
+  
+                      $("#messageFormeight").append($.parseHTML(botHtml)); // Bot cevabını ekrana yazdırır
+                      scrollToBottom();
+                  },
+                  error: function (xhr, status, error) {
+                      console.error("Hata: ", error);
+                  }
+              });
           });
-          event.preventDefault();
-        });
       });
-    </script>
+  </script>
   </body>
 </html>
