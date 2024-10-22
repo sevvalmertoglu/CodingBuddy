@@ -12,7 +12,8 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-user_history = []
+coding_history = []
+project_history = []
 
 @app.route('/')
 def home():
@@ -26,14 +27,13 @@ def codingPage():
 def projectPage():
     return render_template('projectPage.html')
 
-def update_history(new_question):
-    global user_history
-    if len(user_history) >= 5:
-        user_history.pop(0)  # Eski soruyu çıkarır
-    user_history.append(new_question)
+def update_history(new_question, history_list):
+    if len(history_list) >= 5:
+        history_list.pop(0)  # Eski soruyu çıkarır
+    history_list.append(new_question)
 
-def get_history():
-    return " ".join(user_history)  # Son 5 soruyu birleştirip gönderir
+def get_history(history_list):
+    return " ".join(history_list)  # Son 5 soruyu birleştirip gönderir
 
 def extract_text_from_docx(docx_path):
     doc = Document(docx_path)
@@ -57,7 +57,7 @@ def read_file(file_path):
         print(f"An error occurred while encoding the file: {file_path}")
         return None
 
-def call_claude_sonnet_file(file_path, text):
+def call_claude_sonnet_file(file_path, text, history_list):
     file_extension = os.path.splitext(file_path)[1]
 
     if file_extension in ['.docx']:
@@ -77,6 +77,9 @@ def call_claude_sonnet_file(file_path, text):
     model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
 
     try:
+        history = get_history(history_list)
+        full_text = f"Geçmiş sorular: {history} Şu anki soru: {text}"
+
         response = bedrock.invoke_model(
             modelId=model_id,
             body=json.dumps(
@@ -112,7 +115,7 @@ def call_claude_sonnet_file(file_path, text):
                     "messages": [
                         {
                             "role": "user",
-                            "content": [{"type": "text", "text": f"{text}"}],
+                            "content": [{"type": "text", "text": full_text}],
                         }
                     ],
                 }
@@ -133,7 +136,7 @@ def image_to_base64(image_path):
         base64_string = base64.b64encode(image_data).decode('utf-8')
         return base64_string
 
-def call_claude_sonnet(image_path, text):
+def call_claude_sonnet(image_path, text, history_list):
     with open(image_path, "rb") as img_file:
         image_data = img_file.read()
         base64_string = base64.b64encode(image_data).decode('utf-8')
@@ -144,6 +147,9 @@ def call_claude_sonnet(image_path, text):
         aws_access_key_id=AWS_ACCESS_KEY,
         aws_secret_access_key=AWS_SECRET_KEY
     )
+
+    history = get_history(history_list)
+    full_text = f"Geçmiş sorular: {history} Şu anki soru: {text}"
 
     prompt_config = {
         "anthropic_version": "bedrock-2023-05-31",
@@ -160,7 +166,7 @@ def call_claude_sonnet(image_path, text):
                             "data": base64_string,
                         },
                     },
-                    {"type": "text", "text": f"{text}"},
+                    {"type": "text", "text": full_text},
                 ],
             }
         ],
@@ -178,7 +184,7 @@ def call_claude_sonnet(image_path, text):
     results = response_body.get("content")[0].get("text")
     return results
 
-def invoke_claude_3_with_text(prompt):
+def invoke_claude_3_with_text(prompt, history_list):
     bedrock = boto3.client(
         service_name='bedrock-runtime',
         region_name=AWS_REGION,
@@ -190,7 +196,7 @@ def invoke_claude_3_with_text(prompt):
 
     try:
          # History'yi de soruya ekliyoruz
-        history = get_history()
+        history = get_history(history_list)
         full_text = f"Geçmiş sorular: {history} Şu anki soru: {prompt}"
 
         response = bedrock.invoke_model(
@@ -247,29 +253,35 @@ def invoke_claude_3_with_text(prompt):
 def upload():
     message_text = request.form.get('msg')
     image_file = request.files.get('image')
-
     uploaded_file = request.files.get('project')
 
-    update_history(message_text) # Kullanıcının sorusunu kaydeder
+     # Hangi ekranın history'sini kullanacağımızı belirler
+    if request.form.get('page') == 'codingPage':
+        history_list = coding_history
+    elif request.form.get('page') == 'projectPage':
+        history_list = project_history
+    else:
+        history_list = coding_history  # Varsayılan olarak codingPage'e atayalım
+
+    update_history(message_text, history_list) # Kullanıcının sorusunu kaydeder
 
     if image_file:
          filename = image_file.filename
          image_path = os.path.join(UPLOAD_FOLDER, filename)
          image_file.save(image_path)
 
-         result = call_claude_sonnet(image_path, message_text)
+         result = call_claude_sonnet(image_path, message_text, history_list)
 
     elif uploaded_file:
         filename = uploaded_file.filename
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         uploaded_file.save(file_path)
 
-        result = call_claude_sonnet_file(file_path, message_text)
+        result = call_claude_sonnet_file(file_path, message_text, history_list)
     else:
-        result = invoke_claude_3_with_text(message_text)
+        result = invoke_claude_3_with_text(message_text, history_list)
 
     return jsonify({"message": result})
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080, debug=True)
