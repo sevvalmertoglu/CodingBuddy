@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import boto3
 import json
 import base64
+import chardet
 import os
 from docx import Document
 from constants import AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION
@@ -42,15 +43,26 @@ def extract_text_from_docx(docx_path):
     return '\n'.join(text)
 
 def read_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
+    # Dosyanın kodlamasını tahmin et
+    with open(file_path, 'rb') as file:
+        raw_data = file.read()
+        result = chardet.detect(raw_data)
+        encoding = result['encoding']
+    
+    # Dosyayı tahmin edilen kodlama ile oku ve hataları yoksay
+    try:
+        with open(file_path, 'r', encoding=encoding, errors='ignore') as file:
+            return file.read()
+    except UnicodeDecodeError:
+        print(f"An error occurred while encoding the file: {file_path}")
+        return None
 
 def call_claude_sonnet_file(file_path, text):
     file_extension = os.path.splitext(file_path)[1]
 
     if file_extension in ['.docx']:
         text = extract_text_from_docx(file_path)
-    elif file_extension in ['.swift']:
+    elif file_extension in ['.pdf','.pptx','.txt','.swift', '.html', '.css', '.js']:
         text = read_file(file_path)
     else:
         return "Unsupported file type."
