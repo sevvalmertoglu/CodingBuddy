@@ -63,7 +63,7 @@
                   <input type="file" 
                          id="projectInput"
                          name="project" 
-                         accept=".zip,.pdf,.docx,.pptx,.txt,.swift,.js,.css,.html"
+                         accept=".pdf,.docx,.pptx,.txt,.swift,.js,.css,.html"
                          style="display:none;"
                       >
                 </div>
@@ -106,8 +106,6 @@
           document.getElementById('projectInput').addEventListener('change', function () {
               if (this.files.length > 0) {
                   $('#project i').removeClass('fas fa-project-diagram').addClass('fas fa-check');
-              } else {
-                  $('#project i').removeClass('fas fa-check').addClass('fas fa-project-diagram');
               }
           });
 
@@ -141,7 +139,7 @@
               scrollToBottom();
 
               // Simgeyi tekrar eski haline döndürür
-              $('#photo i').removeClass('fas fa-check').addClass('fas fa-project-diagram');
+              $('#project i').removeClass('fas fa-check').addClass('fas fa-project-diagram');
 
                 // 1 saniye sonra '...' mesajını gösterir
               setTimeout(function() {
