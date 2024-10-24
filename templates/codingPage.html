@@ -52,6 +52,7 @@
             <div id="messageFormeight" class="card-body msg_card_body"></div>
             <div class="card-footer">
               <form id="messageArea" class="input-group">
+                <input type="hidden" name="page" value="codingPage">
                 <div class="input-group-append">
                   <button
                     type="button"
@@ -122,11 +123,15 @@
               var rawText = $("#text").val(); 
               var imageFile = document.getElementById('imageInput').files[0];
               
+              
               var formData = new FormData();
               formData.append('msg', rawText);
               if (imageFile) {
                   formData.append('image', imageFile); 
               }
+
+              var pageValue = $("input[name='page']").val();  // "page" input'undan değeri al
+              formData.append('page', pageValue);
   
               var userHtml =
                   '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' +

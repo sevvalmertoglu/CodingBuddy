@@ -256,12 +256,13 @@ def upload():
     uploaded_file = request.files.get('project')
 
      # Hangi ekranın history'sini kullanacağımızı belirler
-    if request.form.get('page') == 'codingPage':
+    page = request.form.get('page')
+    if page == 'codingPage':
         history_list = coding_history
-    elif request.form.get('page') == 'projectPage':
+    elif page == 'projectPage':
         history_list = project_history
     else:
-        history_list = coding_history  # Varsayılan olarak codingPage'e atayalım
+        return jsonify({"error": "No valid page specified."}), 400
 
     update_history(message_text, history_list) # Kullanıcının sorusunu kaydeder
 
