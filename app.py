@@ -10,10 +10,17 @@ from constants import AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'uploads'
+ADD_PROJECT_FOLDER = os.path.join(UPLOAD_FOLDER, 'projects')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(ADD_PROJECT_FOLDER, exist_ok=True)
 
 coding_history = []
 project_history = []
+
+@app.route('/projects')
+def projects():
+    files = os.listdir(ADD_PROJECT_FOLDER)
+    return render_template('codingPage.html', projects=files)
 
 @app.route('/')
 def home():
@@ -88,7 +95,7 @@ def call_claude_sonnet_file(file_path, text, history_list):
                     "system": """ Senin adın Coding Buddy, bir yazılım asistanısın.
                                 Senin görevin, kullanıcılara yazılım geliştirme konusunda ve yazılım projelerinde yardımcı olmak.
                                 Aşağıdaki kurallara göre cevap vermelisin:
-                                Kibar ol: Kullanıcı teşekkür ettiğinde, rica ederim yardımcı olabileceğim başka bir kodu var mı? diye sor.
+                                Kibar ol: Kullanıcı teşekkür ettiğinde, rica ederim yardımcı olabileceğim başka bir konu var mı? diye sor.
                                 Yanıt dilin, soru diliyle aynı olsun: Soru hangi dilde sorulduysa o dilde cevap ver. Örneğin ingilizce bir yazı yazıldysa sende cevabını ingilizce ver.
                                 Yazılımcı gibi düşün: Cevaplarında teknik ve çözüm odaklı ol, yazılım geliştirme pratiğine uygun önerilerde bulun.
                                 Arkadaşça bir dil kullan: Resmi olmayan, rahat ve anlaşılır bir dilde konuş. Ancak, saygılı olmayı unutma.
@@ -115,7 +122,7 @@ def call_claude_sonnet_file(file_path, text, history_list):
 
                                 Seninle paylaşılacak dosyaya uygun çıktı üret. """,
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 1024,
+                    "max_tokens": 4096,
                     "messages": [
                         {
                             "role": "user",
@@ -199,9 +206,9 @@ def invoke_claude_3_with_text(prompt, history_list):
     model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
 
     try:
-         # History'yi de soruya ekliyoruz
         history = get_history(history_list)
         full_text = f"Geçmiş sorular: {history} Şu anki soru: {prompt}"
+        print(full_text)
 
         response = bedrock.invoke_model(
             modelId=model_id,
@@ -210,6 +217,7 @@ def invoke_claude_3_with_text(prompt, history_list):
                     "system": """ Senin adın Coding Buddy, bir yazılım asistanısın.
                                 Senin görevin, kullanıcılara yazılım geliştirme konusunda ve yazılım projelerinde yardımcı olmak.
                                 Aşağıdaki kurallara göre cevap vermelisin:
+                                Kibar ol: Kullanıcı teşekkür ettiğinde, rica ederim yardımcı olabileceğim başka bir konu var mı? diye sor.
                                 Yanıt dilin, soru diliyle aynı olsun: Soru hangi dilde sorulduysa o dilde cevap ver. Örneğin ingilizce bir yazı yazıldysa sende cevabını ingilizce ver.
                                 Yazılımcı gibi düşün: Cevaplarında teknik ve çözüm odaklı ol, yazılım geliştirme pratiğine uygun önerilerde bulun.
                                 Arkadaşça bir dil kullan: Resmi olmayan, rahat ve anlaşılır bir dilde konuş. Ancak, saygılı olmayı unutma.
@@ -234,7 +242,7 @@ def invoke_claude_3_with_text(prompt, history_list):
                                 Yanıt: Ben bir yazılım asistanıyım,
                                 sadece yazılım ve teknoloji ile ilgili soruları yanıtlıyorum. """,
                     "anthropic_version": "bedrock-2023-05-31",
-                    "max_tokens": 1024,
+                    "max_tokens": 4096,
                     "messages": [
                         {
                             "role": "user",
@@ -252,6 +260,22 @@ def invoke_claude_3_with_text(prompt, history_list):
     except Exception as e:
         print(str(e))
         return None
+    
+@app.route('/save_project', methods=['POST'])
+def save_project():
+    if 'project' not in request.files:
+        return jsonify({"message": "Dosya seçilmedi."}), 400
+
+    file = request.files['project']
+    
+    if file.filename == '':
+        return jsonify({"message": "Geçerli bir dosya seçin."}), 400
+
+    # Dosya yolunu ayarla ve kaydet
+    file_path = os.path.join(ADD_PROJECT_FOLDER, file.filename)
+    file.save(file_path)
+    
+    return jsonify({"message": "Proje başarıyla kaydedildi."})
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -259,7 +283,7 @@ def upload():
     image_file = request.files.get('image')
     uploaded_file = request.files.get('project')
 
-     # Hangi ekranın history'sini kullanacağımızı belirler
+    # Hangi ekranın history'sini kullanacağımızı belirler
     page = request.form.get('page')
     if page == 'codingPage':
         history_list = coding_history
@@ -283,6 +307,7 @@ def upload():
         uploaded_file.save(file_path)
 
         result = call_claude_sonnet_file(file_path, message_text, history_list)
+
     else:
         result = invoke_claude_3_with_text(message_text, history_list)
 

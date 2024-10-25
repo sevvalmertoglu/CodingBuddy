@@ -67,8 +67,6 @@
                          accept=".pdf,.docx,.pptx,.txt,.swift,.js,.css,.html"
                          style="display:none;"
                       >
-
-
                   <button
                     type="button"
                     id="upload"
@@ -76,12 +74,6 @@
                   >
                   <i class="fas fa-upload" id="imageIcon"></i>
                   </button>
-                  <input type="file" 
-                         id="uploadInput"
-                         name="upload" 
-                         accept=".pdf,.docx,.pptx,.txt,.swift,.js,.css,.html"
-                         style="display:none;"
-                      >
                 </div>
                 <input
                   type="text"
@@ -112,16 +104,29 @@
   <div id="uploadModal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <h2>Proje Ekle</h2>
+      <h2>Add a Project</h2>
       <div class="button-container">
-        <button id="addProjectBtn">Proje Ekle</button>
-        <button id="saveProjectBtn">Projeyi Kaydet</button>
+        <button id="addProjectBtn">
+          <i class="fas fa-upload"></i> Add
+        </button>
+        <input type="file" 
+        id="addProjectInput"
+        name="addProjectBtn" 
+        accept=".swift,.js,.css,.html"
+        style="display:none;">
+        <button id="saveProjectBtn">Save</button>
       </div>
+      <div id="feedbackMessage" style="color: rgb(5, 189, 5); margin-top: 10px;"></div> <!-- Başarı mesajı alanı -->
     </div>
   </div>
 
-  <script>
-    $(document).ready(function () {
+    <script>
+      function scrollToBottom() {
+        var messageBody = document.getElementById("messageFormeight");
+        messageBody.scrollTop = messageBody.scrollHeight;
+      }
+
+      $(document).ready(function () {
       var modal = document.getElementById("uploadModal");
       var btn = document.getElementById("upload"); 
       var span = document.getElementsByClassName("close")[0]; 
@@ -141,17 +146,23 @@
           }
       }
     });
-  </script>
-
-    <script>
-      function scrollToBottom() {
-        var messageBody = document.getElementById("messageFormeight");
-        messageBody.scrollTop = messageBody.scrollHeight;
-      }
 
       $(document).ready(function () {
           document.getElementById('project').addEventListener('click', function () {
               document.getElementById('projectInput').click();
+          });
+
+          $('#addProjectBtn').click(function() {
+              $('#addProjectInput').click(); // Proje dosyası yüklemek için tıkla
+          }); 
+
+          // Dosya seçildiğinde buton simgesini değiştirir
+          $('#addProjectInput').change(function() {
+              if (this.files.length > 0) {
+                  $('#addProjectBtn i').removeClass('fas fa-upload').addClass('fas fa-check');
+              } else {
+                  $('#addProjectBtn i').removeClass('fas fa-check').addClass('fas fa-upload');
+              }
           });
 
           document.getElementById('projectInput').addEventListener('change', function () {
@@ -159,6 +170,36 @@
                   $('#project i').removeClass('fas fa-project-diagram').addClass('fas fa-check');
               }
           });
+
+          // Seçilen dosyayı project klasörüne kaydetmek için
+          $('#saveProjectBtn').click(function() {
+              var projectFile = document.getElementById('addProjectInput').files[0];
+              if (projectFile) {
+                  var formData = new FormData();
+                  formData.append('project', projectFile);
+                  
+                  $.ajax({
+                      type: "POST",
+                      url: "/save_project",
+                      data: formData,
+                      processData: false,
+                      contentType: false,
+                      success: function(response) {
+                          $('#feedbackMessage').text("File saving successful!");
+                          setTimeout(function() {
+                            $('#feedbackMessage').text('');
+                            $('#uploadModal').hide(); 
+                          }, 2000);
+                      },
+                      error: function(xhr, status, error) {
+                          console.error("ERROR: ", error);
+                      }
+                  });
+              } else {
+                  alert("Please select a project file.");
+              }
+          });
+
 
           $("#messageArea").on("submit", function (event) {
               event.preventDefault(); 
@@ -175,6 +216,9 @@
               formData.append('msg', rawText);
               if (projectFile) {
                   formData.append('project', projectFile); 
+              }
+              if (addProjectFile) {
+                  formData.append('addProjectBtn', addProjectFile);
               }
 
               var pageValue = $("input[name='page']").val();  // "page" input'undan değeri alır
