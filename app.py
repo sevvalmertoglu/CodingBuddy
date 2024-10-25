@@ -61,9 +61,9 @@ def call_claude_sonnet_file(file_path, text, history_list):
     file_extension = os.path.splitext(file_path)[1]
 
     if file_extension in ['.docx']:
-        text = extract_text_from_docx(file_path)
+        file_text = extract_text_from_docx(file_path)
     elif file_extension in ['.pdf','.pptx','.txt','.swift', '.html', '.css', '.js']:
-        text = read_file(file_path)
+        file_text = read_file(file_path)
     else:
         return "Unsupported file type."
 
@@ -78,7 +78,8 @@ def call_claude_sonnet_file(file_path, text, history_list):
 
     try:
         history = get_history(history_list)
-        full_text = f"Geçmiş sorular: {history} Şu anki soru: {text}"
+        full_text =  f"Geçmiş sorular:{history}\n\nŞu anki soru:{text}\n\nİşte seninle paylaşılan dosya:{file_text}\n\nCevap:"
+        print(f"Full text being sent: {full_text}")
 
         response = bedrock.invoke_model(
             modelId=model_id,
@@ -87,6 +88,7 @@ def call_claude_sonnet_file(file_path, text, history_list):
                     "system": """ Senin adın Coding Buddy, bir yazılım asistanısın.
                                 Senin görevin, kullanıcılara yazılım geliştirme konusunda ve yazılım projelerinde yardımcı olmak.
                                 Aşağıdaki kurallara göre cevap vermelisin:
+                                Kibar ol: Kullanıcı teşekkür ettiğinde, rica ederim yardımcı olabileceğim başka bir kodu var mı? diye sor.
                                 Yanıt dilin, soru diliyle aynı olsun: Soru hangi dilde sorulduysa o dilde cevap ver. Örneğin ingilizce bir yazı yazıldysa sende cevabını ingilizce ver.
                                 Yazılımcı gibi düşün: Cevaplarında teknik ve çözüm odaklı ol, yazılım geliştirme pratiğine uygun önerilerde bulun.
                                 Arkadaşça bir dil kullan: Resmi olmayan, rahat ve anlaşılır bir dilde konuş. Ancak, saygılı olmayı unutma.
@@ -109,7 +111,9 @@ def call_claude_sonnet_file(file_path, text, history_list):
 
                                 Yazılım dışı bir soru sorulursa:
                                 Yanıt: Ben bir yazılım asistanıyım,
-                                sadece yazılım ve teknoloji ile ilgili soruları yanıtlıyorum. """,
+                                sadece yazılım ve teknoloji ile ilgili soruları yanıtlıyorum.
+
+                                Seninle paylaşılacak dosyaya uygun çıktı üret. """,
                     "anthropic_version": "bedrock-2023-05-31",
                     "max_tokens": 1024,
                     "messages": [
