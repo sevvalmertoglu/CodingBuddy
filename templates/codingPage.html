@@ -112,7 +112,7 @@
               document.getElementById('imageInput').click();
           });
 
-            // Resim yüklendiğinde tik işareti göster
+            // Resim yüklendiğinde check işareti göster
           document.getElementById('imageInput').addEventListener('change', function () {
               if (this.files.length > 0) {
                   $('#photo i').removeClass('fas fa-image').addClass('fas fa-check');
@@ -128,10 +128,12 @@
               const str_time = hour + ":" + minute;
               var rawText = $("#text").val(); 
               var imageFile = document.getElementById('imageInput').files[0];
+              var selectedProject = $("#projectDropdown").val(); // Dropdown'dan seçili proje
               
               
               var formData = new FormData();
               formData.append('msg', rawText);
+              formData.append('selected_project', selectedProject);
               if (imageFile) {
                   formData.append('image', imageFile); 
               }
@@ -147,7 +149,10 @@
                   '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
               
               $("#text").val("");
+
               document.getElementById('imageInput').value = ""; // Resim alanını her soruda sıfırlar
+              document.getElementById('projectDropdown').value = ""; // Dropdown alanını her soruda sıfırlar
+            
               $("#messageFormeight").append(userHtml);
               scrollToBottom();
 

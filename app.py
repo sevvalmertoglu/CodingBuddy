@@ -204,8 +204,7 @@ def invoke_claude_3_with_text(prompt, history_list):
     try:
         history = get_history(history_list)
         full_text = f"Geçmiş sorular: {history} Şu anki soru: {prompt}"
-        print(full_text)
-
+        
         response = bedrock.invoke_model(
             modelId=model_id,
             body=json.dumps(
@@ -278,6 +277,8 @@ def upload():
     message_text = request.form.get('msg')
     image_file = request.files.get('image')
     uploaded_file = request.files.get('project')
+    selected_project = request.form.get('selected_project')
+
 
     # Hangi ekranın history'sini kullanacağımızı belirler
     page = request.form.get('page')
@@ -302,6 +303,15 @@ def upload():
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         uploaded_file.save(file_path)
 
+        result = call_claude_sonnet_file(file_path, message_text, history_list)
+
+    elif selected_project:
+        file_path = os.path.join(ADD_PROJECT_FOLDER, selected_project)
+
+        # Eğer proje dosyası bulunamıyorsa hata döndürür
+        if not os.path.exists(file_path):
+            return jsonify({"error": "Selected project file does not exist."}), 404
+        
         result = call_claude_sonnet_file(file_path, message_text, history_list)
 
     else:
