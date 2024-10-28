@@ -17,18 +17,14 @@ os.makedirs(ADD_PROJECT_FOLDER, exist_ok=True)
 coding_history = []
 project_history = []
 
-@app.route('/projects')
-def projects():
-    files = os.listdir(ADD_PROJECT_FOLDER)
-    return render_template('codingPage.html', projects=files)
-
 @app.route('/')
 def home():
     return render_template('index.html')
 
 @app.route('/codingPage')
 def codingPage():
-    return render_template('codingPage.html')
+    files = os.listdir(ADD_PROJECT_FOLDER) 
+    return render_template('codingPage.html', projects=files)
 
 @app.route('/projectPage')
 def projectPage():
