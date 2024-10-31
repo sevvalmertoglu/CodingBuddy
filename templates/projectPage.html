@@ -16,7 +16,6 @@
       crossorigin="anonymous"
     />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <link rel="shortcut icon" type="image/png" href="img/icon.png"/>
   </head>
 
   <body>
@@ -173,10 +172,10 @@
 
           // Seçilen dosyayı project klasörüne kaydetmek için
           $('#saveProjectBtn').click(function() {
-              var projectFile = document.getElementById('addProjectInput').files[0];
-              if (projectFile) {
+              var addProjectFile = document.getElementById('addProjectInput').files[0];
+              if (addProjectFile) {
                   var formData = new FormData();
-                  formData.append('project', projectFile);
+                  formData.append('project', addProjectFile);
                   
                   $.ajax({
                       type: "POST",
@@ -211,13 +210,14 @@
 
               var rawText = $("#text").val(); 
               var projectFile = document.getElementById('projectInput').files[0];
+              var addProjectFile = document.getElementById('addProjectInput').files[0];;
               
               var formData = new FormData();
               formData.append('msg', rawText);
               if (projectFile) {
                   formData.append('project', projectFile); 
               }
-              if (addProjectFile) {
+              else if (addProjectFile) {
                   formData.append('addProjectBtn', addProjectFile);
               }
 
@@ -239,11 +239,11 @@
               // Simgeyi tekrar eski haline döndürür
               $('#project i').removeClass('fas fa-check').addClass('fas fa-project-diagram');
 
-                // 1 saniye sonra '...' mesajını gösterir
+              // 1 saniye sonra 'Working on your question, please wait a moment...' mesajını gösterir
               setTimeout(function() {
               var thinkingHtml =
                 '<div class="d-flex justify-content-start mb-4 thinking-msg"><div class="img_cont_msg"><img src="https://i.ibb.co/yqQTbNc/bot.jpg" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' +
-                '...' +
+                'Working on your question, please wait a moment...' +
                 '<span class="msg_time">' +
                 str_time +
                 '</span></div></div>';
@@ -262,7 +262,7 @@
                   success: function (response) {
                       var botResponse = response.message;
 
-                      // '...' mesajını kaldırır ve gerçek cevabı ekler
+                      // 'Working on your question, please wait a moment...' mesajını kaldırır ve gerçek cevabı ekler
                       $(".thinking-msg").remove();
   
                       var botHtml =
