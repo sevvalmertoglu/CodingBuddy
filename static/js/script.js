@@ -3,8 +3,7 @@ import { ScrollTrigger } from 'https://cdn.skypack.dev/gsap@3.12.2/ScrollTrigger
 
 if (!CSS.supports('animation-timeline: view()') && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
   gsap.registerPlugin(ScrollTrigger);
-  // Set up all the scroll animations with ScrollTrigger instead.
-  // Blanket styles
+
   gsap.set('.fixed', {
     position: 'fixed',
     inset: 0 });
@@ -37,7 +36,6 @@ if (!CSS.supports('animation-timeline: view()') && window.matchMedia('(prefers-r
       end: 'bottom 75%' } });
 
 
-  // The second section with image scaling down, etc.
   gsap.set('section:nth-of-type(2) article:first-of-type .fixed', {
     clipPath: 'ellipse(220% 200% at 50% 300%)',
     zIndex: 3 });
@@ -87,8 +85,6 @@ if (!CSS.supports('animation-timeline: view()') && window.matchMedia('(prefers-r
       start: 'top 50%',
       end: 'top 0%' } });
 
-
-  // Blur the text on exit
   gsap.to('section:nth-of-type(2) article:first-of-type .text-wrap', {
     filter: 'blur(4rem)',
     opacity: 0,
@@ -99,8 +95,6 @@ if (!CSS.supports('animation-timeline: view()') && window.matchMedia('(prefers-r
       end: 'bottom 25%' } });
 
 
-
-  // Third section
   gsap.set('section:nth-of-type(2) article:nth-of-type(2) .fixed', { zIndex: 3 });
   gsap.from('section:nth-of-type(2) article:nth-of-type(2) .fixed', {
     opacity: 0,
@@ -131,7 +125,6 @@ if (!CSS.supports('animation-timeline: view()') && window.matchMedia('(prefers-r
       end: 'bottom 50%' } });
 
 
-  // Fourth
   gsap.set('.filler', {
     display: 'block',
     position: 'absolute',
@@ -165,7 +158,6 @@ if (!CSS.supports('animation-timeline: view()') && window.matchMedia('(prefers-r
       end: 'bottom 85%' } });
 
 
-  // Animate the text blocks
   const LINES = document.querySelectorAll('.text-blocks p');
   LINES.forEach((LINE, index) => {
     gsap.from(LINE, {
@@ -198,7 +190,6 @@ if (!CSS.supports('animation-timeline: view()') && window.matchMedia('(prefers-r
       end: 'bottom 30%' } });
 
 
-  // The last piece is unclipping the end piece
   gsap.set('section:nth-of-type(2) article:last-of-type .fixed', {
     clipPath: 'ellipse(220% 200% at 50% 300%)',
     zIndex: 5 });
