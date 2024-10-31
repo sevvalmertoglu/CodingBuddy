@@ -144,9 +144,7 @@ def image_to_base64(image_path):
         return base64_string
 
 def call_claude_sonnet(image_path, text, history_list):
-    with open(image_path, "rb") as img_file:
-        image_data = img_file.read()
-        base64_string = base64.b64encode(image_data).decode('utf-8')
+    base64_string = image_to_base64(image_path)
 
     bedrock = boto3.client(
         service_name='bedrock-runtime',
@@ -278,7 +276,6 @@ def upload():
     image_file = request.files.get('image')
     uploaded_file = request.files.get('project')
     selected_project = request.form.get('selected_project')
-
 
     # Hangi ekranın history'sini kullanacağımızı belirler
     page = request.form.get('page')
